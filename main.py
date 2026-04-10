@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from mcp.server.lowlevel.server import TransportSecuritySettings
+from mcp.server.transport_security import TransportSecuritySettings
 import httpx, os, uvicorn
 
 mcp = FastMCP(
