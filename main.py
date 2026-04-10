@@ -1,7 +1,18 @@
 from mcp.server.fastmcp import FastMCP
+from mcp.server.lowlevel.server import TransportSecuritySettings
 import httpx, os, uvicorn
 
-mcp = FastMCP("reddit-search")
+mcp = FastMCP(
+    "reddit-search",
+    transport_security=TransportSecuritySettings(
+        enable_dns_rebinding_protection=True,
+        allowed_hosts=[
+            "reddit-mcp-feqr.onrender.com",
+            "reddit-mcp-feqr.onrender.com:*"
+        ]
+    ),
+    stateless_http=True
+)
 
 @mcp.tool()
 async def search_reddit_posts(subreddit: str, query: str = "",
@@ -31,16 +42,5 @@ async def search_reddit_comments(subreddit: str, query: str = "",
             params=params)
         return r.text
 
-class HostFixMiddleware:
-    def __init__(self, app):
-        self.app = app
-    async def __call__(self, scope, receive, send):
-        if scope["type"] == "http":
-            scope["headers"] = [
-                (b"host", b"localhost") if k == b"host" else (k, v)
-                for k, v in scope.get("headers", [])
-            ]
-        await self.app(scope, receive, send)
-
 port = int(os.environ.get("PORT", 10000))
-uvicorn.run(HostFixMiddleware(mcp.streamable_http_app()), host="0.0.0.0", port=port)
+uvicorn.run(mcp.streamable_http_app(), host="0.0.0.0", port=port)
