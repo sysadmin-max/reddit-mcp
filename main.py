@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-import httpx
+import httpx, os, uvicorn
 
 mcp = FastMCP("reddit-search")
 
@@ -31,4 +31,5 @@ async def search_reddit_comments(subreddit: str, query: str = "",
             params=params)
         return r.text
 
-mcp.run(transport="sse")
+port = int(os.environ.get("PORT", 10000))
+uvicorn.run(mcp.sse_app(), host="0.0.0.0", port=port)
