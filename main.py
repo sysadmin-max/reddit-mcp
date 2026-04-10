@@ -1,7 +1,8 @@
 from mcp.server.fastmcp import FastMCP
 import httpx, os, uvicorn
 
-mcp = FastMCP("reddit-search")
+render_host = os.environ.get("RENDER_EXTERNAL_HOSTNAME", "localhost")
+mcp = FastMCP("reddit-search", allowed_hosts=[render_host, "localhost", "127.0.0.1"])
 
 @mcp.tool()
 async def search_reddit_posts(subreddit: str, query: str = "",
